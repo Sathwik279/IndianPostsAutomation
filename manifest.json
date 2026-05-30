@@ -1,0 +1,22 @@
+{
+    "name":"indian posts automation",
+    "version":"1",
+    "manifest_version":3,
+    "description": "This extension is used to automate the lists data updation in indian posts",
+    "permissions": [
+        "storage",
+        "scripting"
+    ],
+    "host_permissions": ["<all_urls>"],
+    "action":{
+        "default_popup":"popup/popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches":["https://dopagent.indiapost.gov.in/*"],
+            "js":["scripts/accounts.js"]
+        }
+    ]
+
+
+}
