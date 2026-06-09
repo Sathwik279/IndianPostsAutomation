@@ -14,7 +14,7 @@
     "content_scripts": [
         {
             "matches":["https://dopagent.indiapost.gov.in/*"],
-            "js":["scripts/accounts.js"]
+            "js":["scripts/fetchEvery4.js"]
         }
     ]
 
