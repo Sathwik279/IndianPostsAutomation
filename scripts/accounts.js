@@ -17,7 +17,7 @@ chrome.storage.onChanged.addListener(async (changes, areaName)=>{
     }
 })
 
-initialExec()
+// initialExec()
 
 async function initialExec(){
     let data = await chrome.storage.local.get(["firstLoadDone","fetched","currentIndex"])

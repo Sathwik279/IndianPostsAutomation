@@ -1,17 +1,11 @@
 let loginBtn = document.getElementById("login")
-let accountsBtn = document.getElementById("accounts")
+let tickBtn = document.getElementById("tick")
+
 const inputEl = document.getElementById("accountNumbers")
+
 
 // 1. initial loading
 async function initializePopup(){
-    const data = await chrome.storage.local.get(["accountNumbers", "running"]);
-
-    if(data.accountNumbers){
-        inputEl.value = data.accountNumbers
-    }
-
-    const isRunning = data.running ?? false;
-    updateButtonUI(isRunning)
 }
 
 function updateButtonUI(isRunning){
@@ -26,6 +20,20 @@ function updateButtonUI(isRunning){
 
 initializePopup();
 
+let untickBtn = document.getElementById("untick")
+
+tickBtn.addEventListener("click", async ()=>{
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    chrome.tabs.sendMessage(tab.id, {action: "tickAllCheckboxes"})
+    console.log('tick message sent')
+})
+
+untickBtn.addEventListener("click", async ()=>{
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    chrome.tabs.sendMessage(tab.id, {action: "untickAllCheckboxes"})
+    console.log('untick message sent')
+})
+
 // 2. event listeners
 loginBtn.addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -36,25 +44,28 @@ loginBtn.addEventListener("click", async () => {
     });
 });
     
-inputEl.addEventListener(("input"),(event)=>{
-    const currentText = event.target.value
-    console.log(currentText);
-    chrome.storage.local.set({
-        accountNumbers: currentText
-    })
-});
+// inputEl.addEventListener(("input"),(event)=>{
+//     const currentText = event.target.value
+//     console.log(currentText);
+//     chrome.storage.local.set({
+//         accountNumbers: currentText
+//     })
+// });
 
-accountsBtn.addEventListener("click", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const data = await chrome.storage.local.get(["running"]);
-    const currentRunning = data.running ?? false;
-    const nextRunning = !currentRunning
-    await chrome.storage.local.set({
-        running: nextRunning
-    })
-    if(nextRunning===false){
-    await chrome.storage.local.set({running:false, firstLoadDone: false, fetched: false, currentIndex:0});
+// accountsBtn.addEventListener("click", async () => {
+//     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+//     const data = await chrome.storage.local.get(["running"]);
+//     const currentRunning = data.running ?? false;
+//     const nextRunning = !currentRunning
+//     await chrome.storage.local.set({
+//         running: nextRunning
+//     })
+//     if(nextRunning===false){
+//     await chrome.storage.local.set({running:false, firstLoadDone: false, fetched: false, currentIndex:0});
 
-    }
-    updateButtonUI(nextRunning)
-});
+//     }
+//     updateButtonUI(nextRunning)
+// });
+
+
+
