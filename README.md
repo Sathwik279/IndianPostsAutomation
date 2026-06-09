@@ -1,0 +1,1 @@
+This project is concentrated around automating the work done by indian posts agents like automatic account detail automation etc
