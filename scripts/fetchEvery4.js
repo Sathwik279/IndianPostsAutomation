@@ -1,6 +1,6 @@
 
+// logic for autofetch every 4 minutes to keep typing lists in the search box and to be in session instead of being logged out every 5 min of inactivity acc to server.
 let fetchBtn = document.querySelector("#Button3087042")
-
 if(fetchBtn)
 {
     console.log("fetch btn found")
@@ -10,6 +10,8 @@ if(fetchBtn)
 },240000)}
 else
 console.log("fetch btn not found")
+
+
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Message received:', request.action);
@@ -25,7 +27,6 @@ function delay(ms){
     return new Promise(resolve=>setTimeout(resolve,ms))
 }
 
-
 function processTable(boolean){
     console.log('starting the processing')
     let accntTable = document.querySelector("#SummaryList")
@@ -35,7 +36,6 @@ function processTable(boolean){
     let lastIdx = tbody.children.length-2
 
     for(let i=startIdx;i<=lastIdx;i++){
-        delay(1000)
         console.log(tbodyChildren[i])
         //2nd child in each row
         let currentRow = tbodyChildren[i]
@@ -47,8 +47,8 @@ function processTable(boolean){
         console.log(checkBox)
         console.log(accId)
 
-            checkBox.checked = boolean;
-            checkBox.dispatchEvent(new Event('change', {bubbles: true})) // to send the event to the server  
+        checkBox.checked = boolean;
+        checkBox.dispatchEvent(new Event('change', {bubbles: true})) // to send the event to the server  
         
     }
 }
