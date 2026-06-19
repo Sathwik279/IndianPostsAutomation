@@ -1,3 +1,13 @@
+/*
+
+    This script is outdated, it is written at the start of this project.
+    Now the usecase of the project has changed and this has lead to the abandoning of this script.
+    Please understand!!.
+
+*/
+
+
+
 console.log('Indian post Automation script loaded')
 
 chrome.storage.onChanged.addListener(async (changes, areaName)=>{
