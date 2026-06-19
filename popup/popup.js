@@ -3,16 +3,112 @@
 let loginBtn = document.getElementById("login")
 let tickBtn = document.getElementById("tick")
 let untickBtn = document.getElementById("untick")
-let inputEl = document.getElementById("accountNumbers")
+let accountNumbers = document.getElementById("accountNumbers")
 let fileinput = document.getElementById("fileinput")
+let queryInput = document.getElementById("query")
 let records = null
+let recordMap = {};
+
+// Trie implementation
+class TrieNode {
+    constructor() {
+        this.children = {}; // map
+        this.isEnd = false;
+    }
+}
+const root = new TrieNode();
+
+function insert(root, word) {
+    let node = root;
+    for (let char of word) {
+        if (!node.children[char]) {
+            node.children[char] = new TrieNode();
+        }
+        node = node.children[char];
+    }
+    node.isEnd = true;
+}
+
+// Load records and recordMap from chrome storage if they exist
+chrome.storage.local.get(["records", "recordMap"], (result) => {
+    if (result.records && result.recordMap) {
+        records = result.records;
+        recordMap = result.recordMap;
+        console.log("Loaded records and recordMap from chrome storage:", records);
+        for (let record of records) {
+            insert(root, record.account_no + '');
+        }
+    }
+});
+
 
 // Event Listeners
+
+function createTextDivs(text){
+   let node = document.createElement("div");
+   
+   let accountNo = document.createElement("div");
+   accountNo.innerText = text;
+   
+   let depositer = document.createElement("div");
+   depositer.innerText = recordMap[text].name_of_the_depositor
+
+   node.appendChild(accountNo);
+   node.appendChild(depositer)
+
+   node.style.padding = "6px";
+   node.style.margin = "4px 0";
+   node.style.border = "1px solid #ccc";
+
+   return node;
+}
+
+queryInput.addEventListener("input", async (e)=>{
+   let children = returnChildren(root,e.target.value);
+   accountNumbers.innerHTML = ''
+   children = children.map((child)=>{
+    return createTextDivs(child)
+   })
+
+   children.map((childNode)=>{
+    return childNode.addEventListener("click", async (e)=>{
+        // Apply green border to clicked childNode
+        childNode.style.border = "2px solid green";
+
+        let value = childNode.children[0].innerText;
+        console.log(value)
+
+        let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        chrome.tabs.sendMessage(tab.id, {
+            action: "fillInput",
+            value: value
+        });
+    })})
+
+    children.map((child)=>{
+        accountNumbers.appendChild(child)
+    })   
+})
 
 fileinput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     const arrayBuffer = await file.arrayBuffer();
-    processExcel(arrayBuffer)
+    await processExcel(arrayBuffer);
+    records = cleanRecords(records);
+    console.log(records);
+    for(let record of records){
+        insert(root,record.account_no+'');
+    }
+    // building the record map
+    for (let record of records) {
+        recordMap[String(record.account_no)] = record;
+    }
+
+    // Save to chrome local storage
+    chrome.storage.local.set({ records, recordMap }, () => {
+        console.log("Saved records and recordMap to chrome storage");
+    });
 })
 
 tickBtn.addEventListener("click", async () => {
@@ -62,31 +158,12 @@ async function processExcel(buffer) {
         return obj;
     });
 
-    console.log(records)
+    // console.log(records)
 
 }
 
 
-// we need a trie implementation now 
-class TrieNode{
-    constructor(){
-        this.children = {}; // map
-        this.isEnd = false;
-    }
-}
-const root = new TrieNode();
 
-function insert(root, word){
-    let node = root;
-
-    for(let char of word){
-        if(!node.children[char]){
-            node.children[char] = new TrieNode();
-        }
-        node = node.children[char]
-    }
-    node.isEnd = true;
-}
 
 function checkExistence(root,word){
      let node = root;
@@ -112,7 +189,7 @@ function returnChildren(root, word){
     
     dfs(node,word,children);
 
-    console.log(children)
+    // console.log(children)
 
     return children
 
@@ -134,8 +211,21 @@ function dfs(node,tmpword,childCont){
     }
 }
 
-insert(root,"sa")
-insert(root,"sat")
-insert(root,"san")
+function normalizeKey(key) {
+    return key
+        .toLowerCase()
+        .replace(/\s+/g, "_") // replace spaces with _
+        .replace(/[^\w]/g,"") // remove special charachters
+}
 
-returnChildren(root,"sa")
+function cleanRecords(records){
+    return records.map( record => {
+        const newRec = {};
+        for (let key in record) {
+            const newKey = normalizeKey(key);
+            newRec[newKey] = record[key];
+        }
+        return newRec;
+    })
+}
+
